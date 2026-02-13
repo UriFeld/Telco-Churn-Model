@@ -1,0 +1,22 @@
+# venvs
+.venv/
+venv/
+env/
+
+# OS cruft
+.DS_Store
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Artifacts too big for git
+mlruns/
+artifacts/
+data/raw/
+data/processed/
+
+# But keep bundled serving model in the repo
+!src/serving/model/
+!src/serving/model/**

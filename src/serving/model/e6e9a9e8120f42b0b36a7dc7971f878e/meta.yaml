@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/urife/OneDrive/Desktop/Projects/Telco-Churn-Model/mlruns/929762410164545346/e6e9a9e8120f42b0b36a7dc7971f878e/artifacts
+end_time: 1770984024720
+entry_point_name: ''
+experiment_id: '929762410164545346'
+lifecycle_stage: active
+run_id: e6e9a9e8120f42b0b36a7dc7971f878e
+run_name: marvelous-shrew-6
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1770984024572
+status: 4
+tags: []
+user_id: urife
