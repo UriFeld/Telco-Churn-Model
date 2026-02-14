@@ -19,4 +19,6 @@ data/processed/
 
 # But keep bundled serving model in the repo
 !src/serving/model/
-!src/serving/model/**
+!src/serving/model/**/
+!src/serving/model/**/artifacts/
+!src/serving/model/**/artifacts/**
