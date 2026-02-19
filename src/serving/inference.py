@@ -26,35 +26,42 @@ Production Deployment:
 
 import os
 import pandas as pd
-import mlflow
 
 # === MODEL LOADING CONFIGURATION ===
-# IMPORTANT: This path is set during Docker container build
-# In development: uses local MLflow artifacts
-# In production: uses model copied to container at build time
-MODEL_DIR = "/app/model"
+# The container ships a pickled model + (optional) preprocessing artifacts in /app/model
+MODEL_DIR = os.getenv("MODEL_DIR", "/app/model")
+
+# IMPORTANT: we ship a pickle, not an MLflow model directory
+MODEL_PKL = os.path.join(MODEL_DIR, "model.pkl")
+PREPROCESSOR_PKL = os.path.join(MODEL_DIR, "preprocessing.pkl")  # optional
 
 try:
-    # Load the trained XGBoost model in MLflow pyfunc format
-    # This ensures compatibility regardless of the underlying ML library
-    model = mlflow.pyfunc.load_model(MODEL_DIR)
-    print(f"✅ Model loaded successfully from {MODEL_DIR}")
-except Exception as e:
-    print(f"❌ Failed to load model from {MODEL_DIR}: {e}")
-    # Fallback for local development (OPTIONAL)
+    # joblib handles sklearn/xgboost pickles well; fall back to pickle if needed
     try:
-        # Try loading from local MLflow tracking
-        import glob
-        local_model_paths = glob.glob("./mlruns/*/*/artifacts/model")
-        if local_model_paths:
-            latest_model = max(local_model_paths, key=os.path.getmtime)
-            model = mlflow.pyfunc.load_model(latest_model)
-            MODEL_DIR = latest_model
-            print(f"✅ Fallback: Loaded model from {latest_model}")
-        else:
-            raise Exception("No model found in local mlruns")
-    except Exception as fallback_error:
-        raise Exception(f"Failed to load model: {e}. Fallback failed: {fallback_error}")
+        import joblib
+        model = joblib.load(MODEL_PKL)
+    except Exception:
+        import pickle
+        with open(MODEL_PKL, "rb") as f:
+            model = pickle.load(f)
+
+    # Optional: load preprocessor if you want to use it later (your current pipeline does not)
+    preprocessor = None
+    if os.path.exists(PREPROCESSOR_PKL):
+        try:
+            import joblib
+            preprocessor = joblib.load(PREPROCESSOR_PKL)
+        except Exception:
+            import pickle
+            with open(PREPROCESSOR_PKL, "rb") as f:
+                preprocessor = pickle.load(f)
+
+    print(f"✅ Pickle model loaded successfully from {MODEL_PKL}")
+
+except Exception as e:
+    raise Exception(
+        f"Failed to load pickled model. Expected {MODEL_PKL} to exist. Error: {e}"
+    )
 
 # === FEATURE SCHEMA LOADING ===
 # CRITICAL: Load the exact feature column order used during training
