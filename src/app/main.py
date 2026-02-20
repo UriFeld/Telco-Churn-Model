@@ -14,6 +14,7 @@ Architecture:
 from fastapi import FastAPI
 from pydantic import BaseModel
 import gradio as gr
+from gradio.routes import mount_gradio_app
 from src.serving.inference import predict  # Core ML inference logic
 
 # Initialize FastAPI application
@@ -22,6 +23,15 @@ app = FastAPI(
     description="ML API for predicting customer churn in telecom industry",
     version="1.0.0"
 )
+
+# Create Gradio UI
+gradio_ui = gr.Interface(
+    fn=predict,
+    inputs=gr.JSON(),
+    outputs="text",
+    title="Telco Churn Predictor"
+)
+
 
 # === HEALTH CHECK ENDPOINT ===
 # CRITICAL: Required for AWS Application Load Balancer health checks
